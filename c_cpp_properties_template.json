@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "intelliSenseMode": "clang-x64",
+            "name": "Win32",
+            "cppStandard": "c++11",
+            "cStandard": "c99",
+            "compilerPath": "D:/RT-Thread/env-windows-v1.3.5/tools/gnu_gcc/arm_gcc/mingw/bin/arm-none-eabi-gcc",
+            "includePath": [
+                ".",
+                "Core/Inc",
+                "Drivers\\CMSIS\\Device\\ST\\STM32F4xx\\Include",
+                "Drivers\\CMSIS\\Include",
+                "Drivers\\STM32F4xx_HAL_Driver\\Inc",
+                "Applications",
+                "Modules/agile_dbg",
+                "Modules/console",
+                "Modules/CherryRB-1.0.0",
+                "Modules/letter-shell-shell2.x",
+                "Modules/task_run",
+            ],
+            "defines": [
+                "STM32F407xx",
+                "USE_HAL_DRIVER"
+            ]
+        }
+    ],
+    "version": 4
+}

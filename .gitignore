@@ -1,0 +1,5 @@
+build
+.vscode
+Output
+*.uvguix.*
+EventRecorderStub.scvd
