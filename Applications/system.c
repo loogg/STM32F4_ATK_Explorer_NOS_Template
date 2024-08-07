@@ -1,9 +1,12 @@
 #include "system.h"
 #include "console.h"
+#include "netif/ethernetif.h"
 
 #define DBG_TAG "system"
 #define DBG_LVL DBG_INFO
 #include <agile_dbg.h>
+
+extern void lwip_system_init(void);
 
 void system_delay_us(uint32_t us) {
     uint32_t ticks;
@@ -38,6 +41,9 @@ int system_init(void) {
     LOG_I("system init start.");
 
     console_init();
+
+    lwip_system_init();
+    ethernetif_system_init();
 
     LOG_I("system init end.");
 

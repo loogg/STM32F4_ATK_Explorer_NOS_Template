@@ -3,6 +3,10 @@
 #include <stdint.h>
 
 enum task_index {
+    TASK_ETHERNETIF_INPUT,
+    TASK_LWIP_SYS_CHECK_TIMEOUTS,
+    TASK_ETHERNETIF_LINK,
+    TASK_ETHERNETIF_DHCP,
     TASK_CONSOLE_SHELL,
     TASK_INDEX_MAX
 };
