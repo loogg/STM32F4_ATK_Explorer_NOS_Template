@@ -105,6 +105,7 @@ struct netif gnetif;
 
 struct ethernetif {
     struct eth_addr *ethaddr;
+    uint32_t rx_notice;
 #if LWIP_DHCP
     uint8_t dhcp_state;
 #endif /* LWIP_DHCP */
@@ -112,15 +113,13 @@ struct ethernetif {
 
 #if defined(ETH_RX_DUMP) || defined(ETH_TX_DUMP)
 #define __is_print(ch) ((unsigned int)((ch) - ' ') < 127u - ' ')
-static void dump_hex(const uint8_t *ptr, size_t buflen)
-{
+static void dump_hex(const uint8_t *ptr, size_t buflen) {
     unsigned char *buf = (unsigned char *)ptr;
     int i, j;
 
     SYSTEM_PRINTF("\r\n\r\n");
 
-    for (i = 0; i < buflen; i += 16)
-    {
+    for (i = 0; i < buflen; i += 16) {
         SYSTEM_PRINTF("%08X: ", i);
 
         for (j = 0; j < 16; j++)
@@ -131,15 +130,11 @@ static void dump_hex(const uint8_t *ptr, size_t buflen)
         SYSTEM_PRINTF(" ");
 
         for (j = 0; j < 16; j++)
-            if (i + j < buflen)
-                SYSTEM_PRINTF("%c", __is_print(buf[i + j]) ? buf[i + j] : '.');
+            if (i + j < buflen) SYSTEM_PRINTF("%c", __is_print(buf[i + j]) ? buf[i + j] : '.');
         SYSTEM_PRINTF("\r\n");
     }
 }
 #endif
-
-/* Forward declarations. */
-static void ethernetif_input(struct netif *netif);
 
 /**
  * In this function, the hardware should be initialized.
@@ -338,7 +333,7 @@ static struct pbuf *low_level_input(struct netif *netif) {
     uint32_t byteslefttocopy = 0;
     uint32_t i = 0;
 
-    if (HAL_ETH_GetReceivedFrame(&EthHandle) != HAL_OK) {
+    if (HAL_ETH_GetReceivedFrame_IT(&EthHandle) != HAL_OK) {
         LOG_D("receive frame faild");
         return NULL;
     }
@@ -447,31 +442,6 @@ static struct pbuf *low_level_input(struct netif *netif) {
 }
 
 /**
- * This function should be called when a packet is ready to be read
- * from the interface. It uses the function low_level_input() that
- * should handle the actual reception of bytes from the network
- * interface. Then the type of the received packet is determined and
- * the appropriate input function is called.
- *
- * @param netif the lwip network interface structure for this ethernetif
- */
-static void ethernetif_input(struct netif *netif) {
-    struct pbuf *p;
-
-    /* move received packet into a new pbuf */
-    p = low_level_input(netif);
-    /* if no packet could be read, silently ignore this */
-    if (p != NULL) {
-        /* pass all packets to ethernet_input, which decides what packets it supports */
-        if (netif->input(p, netif) != ERR_OK) {
-            LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-            pbuf_free(p);
-            p = NULL;
-        }
-    }
-}
-
-/**
  * Should be called at the beginning of the program to set up the
  * network interface. It calls the function low_level_init() to do the
  * actual setup of the hardware.
@@ -490,7 +460,7 @@ static err_t ethernetif_init(struct netif *netif) {
 
     ethernetif = mem_malloc(sizeof(struct ethernetif));
     if (ethernetif == NULL) {
-        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\n"));
+        LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\r\n"));
         return ERR_MEM;
     }
 
@@ -522,6 +492,7 @@ static err_t ethernetif_init(struct netif *netif) {
     netif->linkoutput = low_level_output;
 
     ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
+    ethernetif->rx_notice = 0;
 #if LWIP_DHCP
     ethernetif->dhcp_state = DHCP_OFF;
 #endif /* LWIP_DHCP */
@@ -772,10 +743,31 @@ static int phy_linkchange_entry(struct task_pcb *task) {
 #define TASK_ETHERNETIF_INPUT_RUN_PERIOD 0
 static int ethernetif_input_entry(struct task_pcb *task) {
     struct netif *netif = task->user_data;
+    struct ethernetif *ethernetif = netif->state;
 
-    ethernetif_input(netif);
+    if (ethernetif->rx_notice) {
+        ethernetif->rx_notice = 0;
+
+        struct pbuf *p = NULL;
+
+        do {
+            p = low_level_input(netif);
+            if (p != NULL) {
+                if (netif->input(p, netif) != ERR_OK) {
+                    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\r\n"));
+                    pbuf_free(p);
+                }
+            }
+        } while (p != NULL);
+    }
 
     return 0;
+}
+
+void ethernetif_notify_rx_notice(void) {
+    struct ethernetif *ethernetif = gnetif.state;
+
+    ethernetif->rx_notice = 1;
 }
 
 int ethernetif_system_init(void) {

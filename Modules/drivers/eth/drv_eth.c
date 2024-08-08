@@ -1,7 +1,8 @@
 #include "drv_eth.h"
+#include "netif/ethernetif.h"
 
 #define DBG_TAG "drv.eth"
-#define DBG_LVL DBG_LOG
+#define DBG_LVL DBG_INFO
 #include <agile_dbg.h>
 
 #if defined(__ICCARM__) /*!< IAR Compiler */
@@ -124,11 +125,16 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* heth) {
     }
 }
 
+/* interrupt service routine */
+void ETH_IRQHandler(void) { HAL_ETH_IRQHandler(&EthHandle); }
+
 void HAL_ETH_ErrorCallback(ETH_HandleTypeDef* heth) { LOG_E("eth err"); }
 
 void HAL_ETH_TxCpltCallback(ETH_HandleTypeDef* heth) { LOG_D("eth tx cplt"); }
 
-void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth) { LOG_D("eth rx cplt"); }
+void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef* heth) {
+    ethernetif_notify_rx_notice();
+}
 
 static void phy_reset(void) {
     HAL_GPIO_WritePin(ETH_RESET_GPIO_Port, ETH_RESET_Pin, GPIO_PIN_RESET);
@@ -150,7 +156,7 @@ HAL_StatusTypeDef drv_eth_init(void) {
     EthHandle.Init.Speed = ETH_SPEED_100M;
     EthHandle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
     EthHandle.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
-    EthHandle.Init.RxMode = ETH_RXPOLLING_MODE;
+    EthHandle.Init.RxMode = ETH_RXINTERRUPT_MODE;
     EthHandle.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
     EthHandle.Init.PhyAddress = LAN8720A_PHY_ADDRESS;
 
