@@ -820,6 +820,11 @@
               <FileType>1</FileType>
               <FilePath>..\Modules\port\lwip\arch\sys_arch.c</FilePath>
             </File>
+            <File>
+              <FileName>lwip_cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Modules\port\lwip\lwip_cmd.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

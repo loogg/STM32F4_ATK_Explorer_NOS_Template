@@ -34,6 +34,7 @@
 
 #include "cpu.h"
 #include <stdio.h>
+#include "system.h"
 
 /* define compiler specific symbols */
 #if defined (__ICCARM__)
@@ -69,11 +70,11 @@
 
 #define LWIP_PLATFORM_DIAG(x) \
     do {                      \
-        printf x;             \
+        SYSTEM_PRINTF x;             \
     } while (0)
 #define LWIP_PLATFORM_ASSERT(x)                                                      \
     do {                                                                             \
-        printf("Assertion \"%s\" failed at line %d in %s\n", x, __LINE__, __FILE__); \
+        SYSTEM_PRINTF("Assertion \"%s\" failed at line %d in %s\n", x, __LINE__, __FILE__); \
     } while (0)
 
 #endif /* __CC_H__ */

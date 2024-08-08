@@ -137,11 +137,12 @@ static void phy_reset(void) {
 }
 
 HAL_StatusTypeDef drv_eth_init(void) {
+    // NOTE: 不能使用局部变量，其他地方会使用到 EthHandle.Init.MACAddr
+    static uint8_t macaddress[6] = {MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR5};
+
     HAL_StatusTypeDef ret;
 
     phy_reset();
-
-    uint8_t macaddress[6] = {MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR5};
 
     EthHandle.Instance = ETH;
     EthHandle.Init.MACAddr = macaddress;
@@ -169,7 +170,7 @@ HAL_StatusTypeDef drv_eth_init(void) {
     /* Initialize Rx Descriptors list: Chain Mode */
     HAL_ETH_DMARxDescListInit(&EthHandle, DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB);
 
-    // HAL_ETH_Start(&EthHandle);
+    HAL_ETH_Start(&EthHandle);
 
     return ret;
 }

@@ -1,12 +1,21 @@
 #include "system.h"
 #include "console.h"
 #include "netif/ethernetif.h"
+#include "shell.h"
 
 #define DBG_TAG "system"
 #define DBG_LVL DBG_INFO
 #include <agile_dbg.h>
 
 extern void lwip_system_init(void);
+
+#ifdef SYSTEM_USING_CONSOLE_SHELL
+static void reboot(void) {
+    __disable_irq();
+    NVIC_SystemReset();
+}
+SHELL_EXPORT_CMD(reboot, reboot, reboot system);
+#endif /* SYSTEM_USING_CONSOLE_SHELL */
 
 void system_delay_us(uint32_t us) {
     uint32_t ticks;

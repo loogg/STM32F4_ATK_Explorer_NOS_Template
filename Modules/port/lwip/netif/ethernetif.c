@@ -59,6 +59,7 @@
 #include <string.h>
 #include "drv_eth.h"
 #include "task_run.h"
+#include "system.h"
 
 #define DBG_TAG "ethif"
 #define DBG_LVL DBG_INFO
@@ -116,23 +117,23 @@ static void dump_hex(const uint8_t *ptr, size_t buflen)
     unsigned char *buf = (unsigned char *)ptr;
     int i, j;
 
-    printf("\r\n\r\n");
+    SYSTEM_PRINTF("\r\n\r\n");
 
     for (i = 0; i < buflen; i += 16)
     {
-        printf("%08X: ", i);
+        SYSTEM_PRINTF("%08X: ", i);
 
         for (j = 0; j < 16; j++)
             if (i + j < buflen)
-                printf("%02X ", buf[i + j]);
+                SYSTEM_PRINTF("%02X ", buf[i + j]);
             else
-                printf("   ");
-        printf(" ");
+                SYSTEM_PRINTF("   ");
+        SYSTEM_PRINTF(" ");
 
         for (j = 0; j < 16; j++)
             if (i + j < buflen)
-                printf("%c", __is_print(buf[i + j]) ? buf[i + j] : '.');
-        printf("\r\n");
+                SYSTEM_PRINTF("%c", __is_print(buf[i + j]) ? buf[i + j] : '.');
+        SYSTEM_PRINTF("\r\n");
     }
 }
 #endif
@@ -152,8 +153,8 @@ static void low_level_init(struct netif *netif) {
 
     hal_eth_init_status = drv_eth_init();
     if (hal_eth_init_status == HAL_OK) {
-        // LOG_I("low init link up");
-        // netif->flags |= NETIF_FLAG_LINK_UP;
+        LOG_I("low init link up");
+        netif->flags |= NETIF_FLAG_LINK_UP;
     }
 
     /* set MAC hardware address length */
@@ -793,7 +794,7 @@ int ethernetif_system_init(void) {
 #endif /* LWIP_DHCP */
 
     /* Add the network interface */
-    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, ethernet_input);
+    netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ethernet_input);
 
     /*  Registers the default network interface */
     netif_set_default(&gnetif);
