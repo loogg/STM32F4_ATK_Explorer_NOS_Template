@@ -98,7 +98,7 @@
 #define DHCP_TIMEOUT          (uint8_t)4
 #define DHCP_LINK_DOWN        (uint8_t)5
 
-#define MAX_DHCP_TRIES 4
+#define MAX_DHCP_TRIES 2
 #endif /* LWIP_DHCP */
 
 struct netif gnetif;
@@ -144,13 +144,7 @@ static void dump_hex(const uint8_t *ptr, size_t buflen) {
  *        for this ethernetif
  */
 static void low_level_init(struct netif *netif) {
-    HAL_StatusTypeDef hal_eth_init_status;
-
-    hal_eth_init_status = drv_eth_init();
-    if (hal_eth_init_status == HAL_OK) {
-        LOG_I("low init link up");
-        netif->flags |= NETIF_FLAG_LINK_UP;
-    }
+    drv_eth_init();
 
     /* set MAC hardware address length */
     netif->hwaddr_len = ETHARP_HWADDR_LEN;
@@ -184,6 +178,11 @@ static void low_level_init(struct netif *netif) {
 #endif /* LWIP_IPV6 && LWIP_IPV6_MLD */
 
     /* Do whatever else is needed to initialize interface. */
+    LOG_D("RESET PHY!");
+
+    HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, PHY_RESET);
+    HAL_Delay(2000);
+    HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, PHY_AUTONEGOTIATION);
 }
 
 /**
@@ -463,6 +462,7 @@ static err_t ethernetif_init(struct netif *netif) {
         LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_init: out of memory\r\n"));
         return ERR_MEM;
     }
+    memset(ethernetif, 0, sizeof(struct ethernetif));
 
 #if LWIP_NETIF_HOSTNAME
     /* Initialize interface hostname */
@@ -492,7 +492,6 @@ static err_t ethernetif_init(struct netif *netif) {
     netif->linkoutput = low_level_output;
 
     ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
-    ethernetif->rx_notice = 0;
 #if LWIP_DHCP
     ethernetif->dhcp_state = DHCP_OFF;
 #endif /* LWIP_DHCP */
@@ -514,6 +513,7 @@ void ethernetif_notify_conn_changed(struct netif *netif) {
         LOG_I("The network cable is now connected");
 
 #if LWIP_DHCP
+        struct ethernetif *ethernetif = netif->state;
         /* Update DHCP state machine */
         ethernetif->dhcp_state = DHCP_START;
 #else
@@ -539,62 +539,9 @@ void ethernetif_notify_conn_changed(struct netif *netif) {
 }
 
 static void ethernetif_update_config(struct netif *netif) {
-    __IO uint32_t tickstart = 0;
-    uint32_t regvalue = 0;
-
     LOG_I("update ethernet config");
 
     if (netif_is_link_up(netif)) {
-        /* Restart the auto-negotiation */
-        if (EthHandle.Init.AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE) {
-            /* Enable Auto-Negotiation */
-            HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, PHY_AUTONEGOTIATION);
-
-            /* Get tick */
-            tickstart = HAL_GetTick();
-
-            /* Wait until the auto-negotiation will be completed */
-            do {
-                HAL_ETH_ReadPHYRegister(&EthHandle, PHY_BSR, &regvalue);
-
-                /* Check for the Timeout ( 1s ) */
-                if ((HAL_GetTick() - tickstart) > 1000) {
-                    /* In case of timeout */
-                    goto error;
-                }
-
-            } while (((regvalue & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
-
-            /* Read the result of the auto-negotiation */
-            HAL_ETH_ReadPHYRegister(&EthHandle, PHY_SR, &regvalue);
-
-            /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
-            if ((regvalue & PHY_DUPLEX_STATUS) != (uint32_t)RESET) {
-                /* Set Ethernet duplex mode to Full-duplex following the auto-negotiation */
-                EthHandle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
-            } else {
-                /* Set Ethernet duplex mode to Half-duplex following the auto-negotiation */
-                EthHandle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
-            }
-            /* Configure the MAC with the speed fixed by the auto-negotiation process */
-            if (regvalue & PHY_SPEED_STATUS) {
-                /* Set Ethernet speed to 10M following the auto-negotiation */
-                EthHandle.Init.Speed = ETH_SPEED_10M;
-            } else {
-                /* Set Ethernet speed to 100M following the auto-negotiation */
-                EthHandle.Init.Speed = ETH_SPEED_100M;
-            }
-        } else /* AutoNegotiation Disable */
-        {
-        error:
-            /* Check parameters */
-            assert_param(IS_ETH_SPEED(EthHandle.Init.Speed));
-            assert_param(IS_ETH_DUPLEX_MODE(EthHandle.Init.DuplexMode));
-
-            /* Set MAC Speed and Duplex Mode to PHY */
-            HAL_ETH_WritePHYRegister(&EthHandle, PHY_BCR, ((uint16_t)(EthHandle.Init.DuplexMode >> 3) | (uint16_t)(EthHandle.Init.Speed >> 1)));
-        }
-
         /* ETHERNET MAC Re-Configuration */
         HAL_ETH_ConfigMAC(&EthHandle, (ETH_MACInitTypeDef *)NULL);
 
@@ -682,7 +629,6 @@ enum {
 #define TASK_ETHERNETIF_LINK_RUN_PERIOD 500
 static int phy_linkchange_entry(struct task_pcb *task) {
     static uint8_t phy_speed = 0;
-
     struct netif *netif = task->user_data;
     uint8_t phy_speed_new = 0;
     uint32_t phyreg = 0;
@@ -720,14 +666,18 @@ static int phy_linkchange_entry(struct task_pcb *task) {
             LOG_I("link up");
             if (phy_speed & PHY_100M) {
                 LOG_I("100Mbps");
+                EthHandle.Init.Speed = ETH_SPEED_100M;
             } else {
                 LOG_I("10Mbps");
+                EthHandle.Init.Speed = ETH_SPEED_10M;
             }
 
             if (phy_speed & PHY_FULL_DUPLEX) {
                 LOG_I("full-duplex");
+                EthHandle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
             } else {
                 LOG_I("half-duplex");
+                EthHandle.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
             }
 
             netif_set_link_up(netif);

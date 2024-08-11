@@ -66,6 +66,8 @@
 #define LWIP_SNMP_V3               (LWIP_SNMP)
 #endif
 
+#define LWIP_NETIF_HOSTNAME        0
+
 #define LWIP_DNS                   0
 #define LWIP_MDNS_RESPONDER        0
 
@@ -251,7 +253,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces. */
-#define LWIP_DHCP               0
+#define LWIP_DHCP               1
 
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
@@ -292,9 +294,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define SYS_STATS               1
 #define MIB2_STATS              1
 #endif /* LWIP_STATS */
-
-/* ---------- NETBIOS options ---------- */
-#define LWIP_NETBIOS_RESPOND_NAME_QUERY 0
 
 /* ---------- PPP options ---------- */
 
@@ -374,5 +373,9 @@ void sys_unlock_tcpip_core(void);
   /* CHECKSUM_CHECK_ICMP==1: Check checksums by hardware for incoming ICMP packets.*/
   #define CHECKSUM_GEN_ICMP               1
 #endif
+
+/* ---------- NETBIOS options ---------- */
+#define NETBIOS_LWIP_NAME "NETBIOSLWIPDEV"
+#define LWIP_NETBIOS_RESPOND_NAME_QUERY 0
 
 #endif /* LWIP_LWIPOPTS_H */

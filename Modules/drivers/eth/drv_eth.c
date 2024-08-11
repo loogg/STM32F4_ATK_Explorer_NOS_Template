@@ -152,7 +152,7 @@ HAL_StatusTypeDef drv_eth_init(void) {
 
     EthHandle.Instance = ETH;
     EthHandle.Init.MACAddr = macaddress;
-    EthHandle.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
+    EthHandle.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
     EthHandle.Init.Speed = ETH_SPEED_100M;
     EthHandle.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
     EthHandle.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
@@ -175,8 +175,6 @@ HAL_StatusTypeDef drv_eth_init(void) {
 
     /* Initialize Rx Descriptors list: Chain Mode */
     HAL_ETH_DMARxDescListInit(&EthHandle, DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB);
-
-    HAL_ETH_Start(&EthHandle);
 
     return ret;
 }

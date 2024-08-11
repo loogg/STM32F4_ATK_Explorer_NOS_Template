@@ -828,6 +828,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>LwIP/apps</GroupName>
+          <Files>
+            <File>
+              <FileName>netbiosns.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Modules\lwip-2.1.2\src\apps\netbiosns\netbiosns.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Modules/console</GroupName>
           <Files>
             <File>

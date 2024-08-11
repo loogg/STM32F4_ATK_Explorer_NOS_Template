@@ -226,7 +226,7 @@
 /* PHY Reset delay these values are based on a 1 ms Systick interrupt*/
 #define PHY_RESET_DELAY                 0x000000FFU
 /* PHY Configuration delay */
-#define PHY_CONFIG_DELAY                0x00000FFFU
+#define PHY_CONFIG_DELAY                5U
 
 #define PHY_READ_TO                     0x0000FFFFU
 #define PHY_WRITE_TO                    0x0000FFFFU
