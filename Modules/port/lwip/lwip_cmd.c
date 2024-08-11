@@ -8,6 +8,8 @@
 #include "lwip/prot/ip4.h"
 #include "lwip/timeouts.h"
 #include "lwip/sys.h"
+#include "lwip/dns.h"
+
 #include "system.h"
 #include "shell.h"
 
@@ -71,7 +73,7 @@ static void cmd_list_if(void) {
 
         for (index = 0; index < DNS_MAX_SERVERS; index++) {
             ip_addr = dns_getserver(index);
-            SYSTEM_PRINTF("dns server #%d: %s\r\n", index, inet_ntoa(ip_addr));
+            SYSTEM_PRINTF("dns server #%d: %s\r\n", index, ipaddr_ntoa(ip_addr));
         }
     }
 #endif /**< #if LWIP_DNS */

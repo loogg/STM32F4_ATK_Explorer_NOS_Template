@@ -68,7 +68,7 @@
 
 #define LWIP_NETIF_HOSTNAME        0
 
-#define LWIP_DNS                   0
+#define LWIP_DNS                   1
 #define LWIP_MDNS_RESPONDER        0
 
 #define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
