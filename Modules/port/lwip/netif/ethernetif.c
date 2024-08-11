@@ -65,7 +65,7 @@
 #define DBG_LVL DBG_INFO
 #include <agile_dbg.h>
 
-#define ETH_RX_DUMP
+// #define ETH_RX_DUMP
 // #define ETH_TX_DUMP
 
 /* Define those to better describe your network interface. */
