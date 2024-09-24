@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 enum task_index {
+    TASK_USBD_CDC_ACM,
     TASK_CONSOLE_SHELL,
     TASK_INDEX_MAX
 };

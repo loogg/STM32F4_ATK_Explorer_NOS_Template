@@ -3,7 +3,7 @@
 #ifdef SYSTEM_USING_CONSOLE
 
 #include "main.h"
-#include <stdio.h>
+#include <string.h>
 
 #ifdef __clang__
 __asm(".global __use_no_semihosting\n\t");
@@ -13,21 +13,27 @@ __asm(".global __use_no_semihosting\n\t");
 
 extern UART_HandleTypeDef huart1;
 
-// 标准库需要的支持函数
-struct __FILE {
-    int handle;
-};
-FILE __stdout;
-
-// 定义 _sys_exit() 以避免使用半主机模式
-void _sys_exit(int x) { x = x; }
-
-// 重定义 fputc 函数
-int fputc(int ch, FILE *f) {
+static void _uart_putc(int ch) {
     __HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_TC);
     huart1.Instance->DR = (uint8_t)ch;
     while (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TC) == RESET);
+}
 
+/* This function writes a character to the console. */
+void _ttywrch(int ch) { ch = ch; }
+
+/* for exit() and abort() */
+void _sys_exit(int x) { x = x; }
+
+FILE __stdout;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+PUTCHAR_PROTOTYPE {
+    _uart_putc(ch);
     return ch;
 }
 

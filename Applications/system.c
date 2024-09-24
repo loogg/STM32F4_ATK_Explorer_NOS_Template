@@ -34,10 +34,13 @@ uint32_t HAL_GetTick(void) {
     return uwTick;
 }
 
+extern void usb_sample_init(void);
+
 int system_init(void) {
     LOG_I("system init start.");
 
     console_init();
+    usb_sample_init();
 
     LOG_I("system init end.");
 
