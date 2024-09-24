@@ -13,6 +13,11 @@ static int cdc_acm_send_entry(struct task_pcb *task) {
     cdc_acm_multi_data_send_test(0, 1);
     cdc_acm_multi_data_send_test(0, 2);
 
+#if !USB_LOW_USE_FS
+    cdc_acm_multi_data_send_test(0, 3);
+    cdc_acm_multi_data_send_test(0, 4);
+#endif /* !USB_LOW_USE_FS */
+
     return 0;
 }
 

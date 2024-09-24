@@ -6,7 +6,7 @@ except ImportError:
     raise serial.serialutil.SerialException
 
 
-test_comx = 'COM66'
+test_comx = 'COM3'
 test_baudrate = 2000000
 test_maxsize = 10*1024*1024
 

@@ -6,6 +6,8 @@
 #ifndef CHERRYUSB_CONFIG_H
 #define CHERRYUSB_CONFIG_H
 
+#include "system.h"
+
 /* ================ USB common Configuration ================ */
 
 #define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
@@ -205,7 +207,7 @@
 #endif
 
 #ifndef CONFIG_USBDEV_EP_NUM
-#define CONFIG_USBDEV_EP_NUM 4
+#define CONFIG_USBDEV_EP_NUM 6
 #endif
 
 /* ---------------- FSDEV Configuration ---------------- */
@@ -215,17 +217,17 @@
 /* (5 * number of control endpoints + 8) + ((largest USB packet used / 4) + 1 for
  * status information) + (2 * number of OUT endpoints) + 1 for Global NAK
  */
-#define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (768 / 4)
+// #define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (1024 / 4)
 /* IN Endpoints Max packet Size / 4 */
-#define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX1_FIFO_SIZE (320 / 4)
-#define CONFIG_USB_DWC2_TX2_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX3_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX4_FIFO_SIZE (0 / 4)
-#define CONFIG_USB_DWC2_TX5_FIFO_SIZE (0 / 4)
-#define CONFIG_USB_DWC2_TX6_FIFO_SIZE (0 / 4)
-#define CONFIG_USB_DWC2_TX7_FIFO_SIZE (0 / 4)
-#define CONFIG_USB_DWC2_TX8_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX1_FIFO_SIZE (512 / 4)
+// #define CONFIG_USB_DWC2_TX2_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX3_FIFO_SIZE (64 / 4)
+// #define CONFIG_USB_DWC2_TX4_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX5_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX6_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX7_FIFO_SIZE (0 / 4)
+// #define CONFIG_USB_DWC2_TX8_FIFO_SIZE (0 / 4)
 
 /* ---------------- MUSB Configuration ---------------- */
 // #define CONFIG_USB_MUSB_SUNXI
