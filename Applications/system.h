@@ -17,6 +17,8 @@
 #define SYSTEM_PRINTF(...)
 #endif
 
+#define USB_LOW_USE_FS 0
+
 void system_delay_us(uint32_t us);
 int system_init(void);
 

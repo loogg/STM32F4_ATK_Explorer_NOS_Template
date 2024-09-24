@@ -17,8 +17,14 @@ static int cdc_acm_send_entry(struct task_pcb *task) {
 }
 
 void usb_sample_init(void) {
+#if USB_LOW_USE_FS
     // cdc_acm_init(0, USB_OTG_FS_PERIPH_BASE);
     cdc_acm_multi_init(0, USB_OTG_FS_PERIPH_BASE);
+#else
+    // cdc_acm_init(0, USB_OTG_HS_PERIPH_BASE);
+    cdc_acm_multi_init(0, USB_OTG_HS_PERIPH_BASE);
+#endif /* USB_LOW_USE_FS */
+
     task_init(TASK_USBD_CDC_ACM, cdc_acm_send_entry, NULL, TASK_RUN_PERIOD);
     task_start(TASK_USBD_CDC_ACM);
 }
