@@ -2,6 +2,8 @@
 #include "console.h"
 #include "netif/ethernetif.h"
 #include "shell.h"
+#include "tool_com.h"
+#include "com_tcp.h"
 
 #define DBG_TAG "system"
 #define DBG_LVL DBG_INFO
@@ -53,6 +55,8 @@ int system_init(void) {
 
     lwip_system_init();
     ethernetif_system_init();
+    tool_com_init();
+    com_tcp_init();
 
     LOG_I("system init end.");
 

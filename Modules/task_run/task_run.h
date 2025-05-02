@@ -8,6 +8,8 @@ enum task_index {
     TASK_ETHERNETIF_LINK,
     TASK_ETHERNETIF_DHCP,
     TASK_CONSOLE_SHELL,
+    TASK_TOOL_COM,
+    TASK_COM_TCP,
     TASK_INDEX_MAX
 };
 
